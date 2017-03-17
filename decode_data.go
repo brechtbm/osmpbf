@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/capt-hb/osmpbf/OSMPBF"
+	"github.com/brechtbm/osmpbf/OSMPBF"
 )
 
 // Decoder for Blob with OSMData (PrimitiveBlock)

@@ -2,12 +2,11 @@ package osmpbf_test
 
 import (
 	"fmt"
+	"github.com/brechtbm/osmpbf"
 	"io"
 	"log"
 	"os"
 	"runtime"
-
-	"github.com/qedus/osmpbf"
 )
 
 // Don't forget to sync with README.md

@@ -10,12 +10,11 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"io"
-	"time"
-
+	"github.com/brechtbm/osmpbf/OSMPBF"
 	"github.com/golang/protobuf/proto"
-	"github.com/capt-hb/osmpbf/OSMPBF"
+	"io"
 	"runtime"
+	"time"
 )
 
 const (
