@@ -15,6 +15,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/unf-sander/osmpbf/OSMPBF"
+	"runtime"
 )
 
 const (
@@ -86,20 +87,20 @@ type pair struct {
 // A Decoder reads and decodes OpenStreetMap PBF data from an input stream.
 type Decoder struct {
 	r          io.Reader
-	serializer chan pair
+	serializer chan *pair
 
 	buf *bytes.Buffer
 
 	// for data decoders
-	inputs  []chan<- pair
-	outputs []<-chan pair
+	inputs  []chan<- *pair
+	outputs []<-chan *pair
 }
 
 // NewDecoder returns a new decoder that reads from r.
 func NewDecoder(r io.Reader) *Decoder {
 	d := &Decoder{
 		r:          r,
-		serializer: make(chan pair, 8000), // typical PrimitiveBlock contains 8k OSM entities
+		serializer: make(chan *pair, 8000), // typical PrimitiveBlock contains 8k OSM entities
 	}
 	d.SetBufferSize(initialBlobBufSize)
 	return d
@@ -131,20 +132,31 @@ func (dec *Decoder) Start(n int) error {
 		return err
 	}
 
+	// Memory probblem, force GC every 3 seconds while decoding
+	// Better solution needed...
+	go func() {
+		for {
+			select {
+			case <-time.After(3 * time.Second):
+				runtime.GC()
+			}
+		}
+	}()
+
 	// start data decoders
 	for i := 0; i < n; i++ {
-		input := make(chan pair)
-		output := make(chan pair)
+		input := make(chan *pair)
+		output := make(chan *pair)
 		go func() {
 			dd := new(dataDecoder)
 			for p := range input {
 				if p.e == nil {
 					// send decoded objects or decoding error
 					objects, err := dd.Decode(p.i.(*OSMPBF.Blob))
-					output <- pair{objects, err}
+					output <- &pair{objects, err}
 				} else {
 					// send input error as is
-					output <- pair{nil, p.e}
+					output <- &pair{nil, p.e}
 				}
 			}
 			close(output)
@@ -167,10 +179,10 @@ func (dec *Decoder) Start(n int) error {
 			}
 			if err == nil {
 				// send blob for decoding
-				input <- pair{blob, nil}
+				input <- &pair{blob, nil}
 			} else {
 				// send input error as is
-				input <- pair{nil, err}
+				input <- &pair{nil, err}
 				for _, input := range dec.inputs {
 					close(input)
 				}
@@ -189,12 +201,12 @@ func (dec *Decoder) Start(n int) error {
 			if p.i != nil {
 				// send decoded objects one by one
 				for _, o := range p.i.([]interface{}) {
-					dec.serializer <- pair{o, nil}
+					dec.serializer <- &pair{o, nil}
 				}
 			}
 			if p.e != nil {
 				// send input or decoding error
-				dec.serializer <- pair{nil, p.e}
+				dec.serializer <- &pair{nil, p.e}
 				close(dec.serializer)
 				return
 			}
