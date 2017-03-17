@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/qedus/osmpbf/OSMPBF"
+	"github.com/unf-sander/osmpbf/OSMPBF"
 )
 
 const (
