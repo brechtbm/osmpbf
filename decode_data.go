@@ -169,7 +169,7 @@ func extractInfo(stringTable []string, i *OSMPBF.Info, dateGranularity int64) In
 		millisec := time.Duration(i.GetTimestamp()*dateGranularity) * time.Millisecond
 		info.Timestamp = time.Unix(0, millisec.Nanoseconds()).UTC()
 
-		info.Changeset = i.GetChangeset()
+		info.Changeset = uint64(i.GetChangeset())
 
 		info.Uid = i.GetUid()
 
@@ -207,7 +207,7 @@ func extractDenseInfo(stringTable []string, state *denseInfoState, di *OSMPBF.De
 
 	changesets := di.GetChangeset()
 	if len(changesets) > 0 {
-		state.changeset = changesets[index] + state.changeset
+		state.changeset = uint64(changesets[index]) + state.changeset
 		info.Changeset = state.changeset
 	}
 
