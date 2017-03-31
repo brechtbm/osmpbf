@@ -90,7 +90,6 @@ func (dec *dataDecoder) parseDenseNodes(pb *OSMPBF.PrimitiveBlock, dn *OSMPBF.De
 		longitude := 1e-9 * float64((lonOffset + (granularity * lon)))
 		tags := tu.next()
 		info := extractDenseInfo(st, &state, di, index, dateGranularity)
-
 		dec.q = append(dec.q, &Node{id, latitude, longitude, tags, info})
 	}
 }
@@ -165,7 +164,7 @@ func extractInfo(stringTable []string, i *OSMPBF.Info, dateGranularity int64) In
 	info := Info{Visible: true}
 
 	if i != nil {
-		info.Version = i.GetVersion()
+		info.Version = int16(i.GetVersion())
 
 		millisec := time.Duration(i.GetTimestamp()*dateGranularity) * time.Millisecond
 		info.Timestamp = time.Unix(0, millisec.Nanoseconds()).UTC()
@@ -186,7 +185,7 @@ func extractInfo(stringTable []string, i *OSMPBF.Info, dateGranularity int64) In
 
 type denseInfoState struct {
 	timestamp int64
-	changeset int64
+	changeset uint64
 	uid       int32
 	userSid   int32
 }
@@ -196,7 +195,7 @@ func extractDenseInfo(stringTable []string, state *denseInfoState, di *OSMPBF.De
 
 	versions := di.GetVersion()
 	if len(versions) > 0 {
-		info.Version = versions[index]
+		info.Version = int16(versions[index])
 	}
 
 	timestamps := di.GetTimestamp()

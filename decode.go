@@ -34,9 +34,9 @@ var (
 )
 
 type Info struct {
-	Version   int32
+	Version   int16
 	Timestamp time.Time
-	Changeset int64
+	Changeset uint64
 	Uid       int32
 	User      string
 	Visible   bool
